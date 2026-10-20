@@ -184,11 +184,9 @@ def configure_cors(instance: FastAPI, allowed_origins: list[str]) -> None:
     allow_all_origins = "*" in allowed_origins
     configured_api_key = config.app.get("api_key", "")
     if allow_all_origins and configured_api_key in (None, ""):
-        # ``*`` 是用户显式选择的兼容模式，因此不强制拒绝启动；但在免认证
-        # 状态下它会允许任意网页读取和调用 API，必须留下可定位的安全告警。
-        logger.warning(
-            "CORS allows every browser origin while API key authentication is "
-            "disabled; configure app.api_key or restrict CORS_ALLOWED_ORIGINS"
+        raise RuntimeError(
+            "Unsafe configuration: CORS_ALLOWED_ORIGINS='*' requires "
+            "app.api_key to be set. Restrict the origin allowlist to trusted URLs."
         )
 
     instance.add_middleware(
